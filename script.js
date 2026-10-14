@@ -70,7 +70,7 @@ function undo() {
     restoreState(prev);
     $('#redo-btn').show();
     const $check =$('#check');
-    ['repeat', 'hidden', 'you', 'ts', 'aria'].forEach(cls => {
+    ['hidden', 'you', 'ts', 'aria'].forEach(cls => {
         if ($check.hasClass(cls)) { $(`#${cls}`).addClass('yes'); }
     });
 }
@@ -83,7 +83,7 @@ function redo() {
     restoreState(next);
     $('#undo-btn').show();
     const $check =$('#check');
-    ['repeat', 'hidden', 'you', 'ts', 'aria'].forEach(cls => {
+    ['hidden', 'you', 'ts', 'aria'].forEach(cls => {
         if ($check.hasClass(cls)) { $(`#${cls}`).removeClass('yes'); }
     });
 }
@@ -307,6 +307,21 @@ function internalcss(cssFile) {
         });
 }
 
+// 중복 삭제
+let prevId;
+
+function delRepeat() {
+    $('#log-view .message').each(function () {
+        const id = this.getAttribute('data-messageid');
+
+        if (id === prevId) {
+            this.remove();
+        } else {
+            prevId = id;
+        }
+    });
+}
+
 // 압축
 function compress() {
     $('#log-view .message .flyout').remove();
@@ -442,6 +457,7 @@ $('#start-edit').on('click', async function() {
     $('#log-view').empty();
     const htmlCode = $('#html-text').val();
     $('#log-view').html(htmlCode);
+    delRepeat();
 
     updateLoadingProgress(30, '코드 압축 중⋯');
     await sleep(30);
@@ -749,39 +765,6 @@ $('#rpl-btn').on('click', function() {
 // 일괄 삭제
 $('#remove-reload').on('click', scan);
 
-$('#repeat .remove').on('click', function() {
-    if (!confirm('중복 메시지를 일괄 삭제합니다. 계속하시겠습니까?')) return;
-    saveState();
-    let $msg = $('#log-view .message');
-
-    const getCleanText = ($el) => $el.clone()
-        .find('.spacer, .avatar, .tstamp, .by')
-        .remove()
-        .end()
-        .text()
-        .trim();
-
-    const messages = $msg.toArray();
-    const texts = messages.map(el => getCleanText($(el)));
-
-    let i = 0;
-
-    while (i < messages.length) {
-        const start = i;
-        let pairCount = 0;
-
-        while (i + 1 < messages.length && texts[i] === texts[i + 1]) { pairCount++; i += 2; }
-
-        if (pairCount >= 4) {
-            for (let j = start + 1; j < start + pairCount * 2; j += 2) { $(messages[j]).remove(); }
-        }
-        if (i === start) { i++; }
-    }
-
-    $('#log-view #check').removeClass('repeat');
-    $('#repeat').removeClass('yes');
-});
-
 $('#by .remove').on('click', function() {
     if (!confirm('화자 중복 표시를 일괄 삭제합니다. 계속하시겠습니까?')) return;
     saveState();
@@ -877,37 +860,6 @@ $('#aria .remove').on('click', function() {
 
 // 삭제 요소 검사
 function scan() {
-    // 중복 메시지
-    let $msg = $('#log-view .message');
-
-    const getCleanText = ($el) => $el.clone()
-        .find('.spacer, .avatar, .tstamp, .by')
-        .remove()
-        .end()
-        .text()
-        .trim();
-
-    const messages = $msg.toArray();
-    const texts = messages.map(el => getCleanText($(el)));
-
-    let i = 0;
-    let pair = false;
-
-    while (i < messages.length) {
-        const start = i;
-        let pairCount = 0;
-
-        while (i + 1 < messages.length && texts[i] === texts[i + 1]) { pairCount++; i += 2; }
-
-        if (pairCount >= 4) {
-            $('#repeat').addClass('yes'); $('#check').addClass('repeat');
-            pair = true;
-            break;
-        }
-        if (i === start) { i++; }
-    }
-
-    if (!pair) { $('#repeat').removeClass('yes'); }
 
     // 중복 화자 표시
     const len = $msg.length;
