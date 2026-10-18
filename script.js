@@ -314,6 +314,7 @@ function delRepeat() {
     $('#log-view .message').each(function () {
         const id = this.getAttribute('data-messageid');
 
+        if (!id) return;
         if (id === prevId) {
             this.remove();
         } else {
