@@ -308,9 +308,9 @@ function internalcss(cssFile) {
 }
 
 // 중복 삭제
-let prevId;
-
 function delRepeat() {
+    let prevId;
+
     $('#log-view .message').each(function () {
         const id = this.getAttribute('data-messageid');
 
@@ -862,6 +862,7 @@ $('#aria .remove').on('click', function() {
 function scan() {
 
     // 중복 화자 표시
+    const $msg = $('#log-view .message');
     const len = $msg.length;
     let chat = false;
     i = 0;
